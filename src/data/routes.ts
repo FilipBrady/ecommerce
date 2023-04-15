@@ -3,4 +3,5 @@ export const routes = {
   product: '/product',
   liked: '/liked',
   profil: '/profil',
+  logIn: "/logIn"
 };
