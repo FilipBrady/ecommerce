@@ -1,0 +1,17 @@
+.Navigation {
+  display: flex;
+  justify-content: space-evenly;
+  width: 800px;
+  margin: 0 auto;
+}
+
+.NavLink {
+  text-decoration: none;
+  color: black;
+  cursor: pointer;
+}
+
+.NavLink:hover,
+.NavLink:focus {
+  text-decoration: underline;
+}

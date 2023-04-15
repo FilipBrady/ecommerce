@@ -1,0 +1,19 @@
+.Cart {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  background-color: rgb(214, 246, 255);
+  width: 25%;
+  height: 100vh;
+  z-index: 100;
+  padding: 10px 5px;
+}
+
+.CartClose {
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bolder;
+}
