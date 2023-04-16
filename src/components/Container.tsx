@@ -39,17 +39,35 @@ import {
 } from 'firebase/storage';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '../data/routes';
 
 export type AppState = {
-  products: ProductTypes;
-  categories: CategoryTypes;
+  products: DocumentData[] | undefined;
+  categories: DocumentData[] | undefined;
 
   db: Firestore;
   user: User | null | undefined;
   userInfo: DocumentData[] | undefined;
   auth: Auth;
+  storage: FirebaseStorage;
   signInWithGoogle: () => void;
+  logInWithEmailAndPassword: (email: string, password: string) => void;
+  registerWithEmailAndPassword: (
+    name: string,
+    email: string,
+    password: string
+  ) => void;
 
+  addProduct: (
+    useruid: string,
+    title: string,
+    price: number,
+    description: string,
+    category: string,
+    categoryId: number,
+    uploadedImg: Blob
+  ) => void;
 };
 
 type Props = {
@@ -57,6 +75,7 @@ type Props = {
 };
 
 const Container = ({ children }: Props) => {
+  const navigate = useNavigate();
   const firebaseConfig = {
     apiKey: 'AIzaSyBHOm7GklRrU18DR-Vh3_A5VBBGj85pSR0',
     authDomain: 'ecommerce-891a4.firebaseapp.com',
@@ -76,9 +95,15 @@ const Container = ({ children }: Props) => {
   const userProfileInfo = query(collection(db, 'users'));
   const [userInfo] = useCollectionData(userProfileInfo);
 
-  const [productsList, setProductsList] = useState<ProductTypes>(Products);
-  const [categoriesList, setCategoriesList] =
-    useState<CategoryTypes>(Categories);
+  const productsInfo = query(collection(db, 'products'));
+  const [productsList] = useCollectionData(productsInfo);
+
+  const categoriesInfo = query(collection(db, 'categories'));
+  const [categoriesList] = useCollectionData(categoriesInfo);
+
+  // const [productsList, setProductsList] = useState<ProductTypes>(Products);
+  // const [categoriesList, setCategoriesList] =
+  //   useState<CategoryTypes>(Categories);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
@@ -95,8 +120,158 @@ const Container = ({ children }: Props) => {
           photoURL: user.photoURL,
         });
       }
+      navigate(routes.profil);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const registerWithEmailAndPassword = async (
+    name: string,
+    email: string,
+    password: string
+    // uploadedImg: Blob
+  ) => {
+    try {
+      const createUser = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = createUser.user;
+      navigate(routes.profil);
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        name: name,
+        email: email,
+        photoURL: null,
+      });
+      // const storageRef = ref(storage, `userProfilePictures/` + user.uid);
+      // if (uploadedImg !== undefined) {
+      //   const uploadTask = uploadBytesResumable(storageRef, uploadedImg);
+      //   // Listen for state changes, errors, and completion of the upload.
+      //   uploadTask.on(
+      //     'state_changed',
+      //     snapshot => {
+      //       // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+      //       const progress =
+      //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      //       console.log('Upload is ' + progress + '% done');
+      //       switch (snapshot.state) {
+      //         case 'paused':
+      //           console.log('Upload is paused');
+      //           break;
+      //         case 'running':
+      //           console.log('Upload is running');
+      //           break;
+      //       }
+      //     },
+      //     error => {
+      //       // A full list of error codes is available at
+      //       // https://firebase.google.com/docs/storage/web/handle-errors
+      //       switch (error.code) {
+      //         case 'storage/unauthorized':
+      //           // User doesn't have permission to access the object
+      //           break;
+      //         case 'storage/canceled':
+      //           // User canceled the upload
+      //           break;
+
+      //         // ...
+
+      //         case 'storage/unknown':
+      //           // Unknown error occurred, inspect error.serverResponse
+      //           break;
+      //       }
+      //     },
+      //     () => {
+      //       // Upload completed successfully, now we can get the download URL
+      //       getDownloadURL(uploadTask.snapshot.ref).then(downloadURL => {
+      //         console.log('File available at', downloadURL);
+      //       });
+      //     }
+      //   );
+      // }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const logInWithEmailAndPassword = async (email: string, password: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate(routes.profil);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleAddProduct = async (
+    useruid: string,
+    title: string,
+    price: number,
+    description: string,
+    category: string,
+    categoryId: number,
+    uploadedImg: Blob
+  ) => {
+    const newDocRef = await addDoc(collection(db, 'products'), {
+      useruid,
+      title,
+      price,
+      description,
+      category,
+      categoryId,
+      rating: { rate: 0, count: 0 },
+      createdAt: serverTimestamp(),
+    });
+    const productId = newDocRef.id;
+    await setDoc(newDocRef, { id: productId }, { merge: true });
+    const storageRef = ref(storage, `${auth.currentUser?.uid}/` + productId);
+    if (uploadedImg !== undefined) {
+      const uploadTask = uploadBytesResumable(storageRef, uploadedImg);
+      // Listen for state changes, errors, and completion of the upload.
+      uploadTask.on(
+        'state_changed',
+        snapshot => {
+          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload is ' + progress + '% done');
+          switch (snapshot.state) {
+            case 'paused':
+              console.log('Upload is paused');
+              break;
+            case 'running':
+              console.log('Upload is running');
+              break;
+          }
+        },
+        error => {
+          // A full list of error codes is available at
+          // https://firebase.google.com/docs/storage/web/handle-errors
+          switch (error.code) {
+            case 'storage/unauthorized':
+              // User doesn't have permission to access the object
+              break;
+            case 'storage/canceled':
+              // User canceled the upload
+              break;
+
+            // ...
+
+            case 'storage/unknown':
+              // Unknown error occurred, inspect error.serverResponse
+              break;
+          }
+        },
+        () => {
+          // Upload completed successfully, now we can get the download URL
+          getDownloadURL(uploadTask.snapshot.ref).then(downloadURL => {
+            console.log('File available at', downloadURL);
+          });
+        }
+      );
     }
   };
 
@@ -108,7 +283,12 @@ const Container = ({ children }: Props) => {
     user: user,
     userInfo: userInfo,
     auth: auth,
+    storage: storage,
     signInWithGoogle: signInWithGoogle,
+    logInWithEmailAndPassword: logInWithEmailAndPassword,
+    registerWithEmailAndPassword: registerWithEmailAndPassword,
+
+    addProduct: handleAddProduct,
   };
 
   return <Provider value={appState}>{children(appState)}</Provider>;
