@@ -8,8 +8,6 @@ const Navigation = () => {
   const [isCartVisible, setIsCartVisible] = useState(false);
   const { auth, signInWithGoogle } = useAppContainer();
 
-  console.log(auth.currentUser);
-
   return (
     <div style={{ background: '#bdbdbd', padding: '5px 0' }}>
       <nav className='Navigation'>
@@ -19,17 +17,32 @@ const Navigation = () => {
         <Link to={routes.liked} className='NavLink'>
           Liked
         </Link>
-        <Link to={routes.profil} className='NavLink'>
-          Profil
-        </Link>
+        {auth.currentUser ? (
+          <Link to={routes.profil} className='NavLink'>
+            Your Profile
+          </Link>
+        ) : (
+          <Link to={routes.logIn} className='NavLink'>
+            Profil
+          </Link>
+        )}
         <div onClick={() => setIsCartVisible(!isCartVisible)}>Cart</div>
         {isCartVisible && <Cart setIsCartVisible={setIsCartVisible} />}
-        {auth.currentUser ? (
-          <button onClick={() => auth.signOut()}>Sign Out</button>
-        ) : (
-          <button onClick={signInWithGoogle}>LogIn</button>
+        {!auth.currentUser && (
+          <button>
+            <Link
+              to={routes.logIn}
+              style={{ color: 'black', textDecoration: 'none' }}
+            >
+              Log In
+            </Link>
+          </button>
         )}
-        {auth.currentUser && <div>Hello user</div>}
+        {auth.currentUser && (
+          <button style={{ margin: '1px' }} onClick={() => auth.signOut()}>
+            Sign Out
+          </button>
+        )}
       </nav>
     </div>
   );

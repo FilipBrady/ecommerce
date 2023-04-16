@@ -1,0 +1,39 @@
+.AddProductForm {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-content: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.AddProductForm input {
+  height: 25px;
+  font-size: 20px;
+  border-radius: 25px;
+  border: 1px solid black;
+  padding: 3px 10px;
+}
+.AddProductForm input[type=file] {
+  border: none;
+}
+.AddProductForm input[type=submit] {
+  width: fit-content;
+  margin: auto;
+  padding: 3px 8px;
+  border-radius: 15px;
+  border: none;
+  background-color: rgb(92, 255, 47);
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.AddProductForm textarea {
+  border: none;
+  font-size: 16px;
+  padding: 5px;
+  color: black;
+  border-radius: 15px;
+  border: 1px solid black;
+}

@@ -2,3 +2,28 @@
   text-align: center;
   overflow-x: hidden;
 }
+
+.LogInForm {
+  display: flex;
+  flex-direction: column;
+  gap: 2vmin;
+  margin: auto 0;
+}
+
+.LogInForm input {
+  height: 25px;
+  font-size: 20px;
+  border-radius: 25px;
+  border: 1px solid black;
+  padding: 3px 10px;
+}
+
+.LogInForm input[type=submit] {
+  font-size: 18px;
+  width: fit-content;
+  margin: auto;
+}
+
+.LogInSignUpLink {
+  color: inherit;
+}

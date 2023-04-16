@@ -1,6 +1,6 @@
 import { Box, Button, TextField } from '@mui/material';
 // import products from '../../data/Products.json';
-import ProductCard from '../../pages/ProductCard';
+import ProductCard from './ProductCard';
 import { useState } from 'react';
 import { useAppContainer } from '../Context';
 const ProductSection = () => {
@@ -8,13 +8,16 @@ const ProductSection = () => {
   const [categoryId, setCategoryId] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredProducts = products.filter(product => {
-    const isInCategory = categoryId === 0 || product.categoryId === categoryId;
-    const isInSearch =
-      searchTerm === '' ||
-      product.title.toLowerCase().includes(searchTerm.toLowerCase());
-    return isInCategory && isInSearch;
-  });
+  const filteredProducts =
+    products &&
+    products.filter(product => {
+      const isInCategory =
+        categoryId === 0 || product.categoryId === categoryId;
+      const isInSearch =
+        searchTerm === '' ||
+        product.title.toLowerCase().includes(searchTerm.toLowerCase());
+      return isInCategory && isInSearch;
+    });
   return (
     <Box
       sx={{
@@ -50,15 +53,17 @@ const ProductSection = () => {
         >
           All
         </Button>
-        {categories.map(category => (
-          <Button
-            variant='text'
-            sx={{ margin: '0 4px' }}
-            onClick={() => setCategoryId(category.id)}
-          >
-            {category.categoryTitle}
-          </Button>
-        ))}
+        {categories &&
+          categories.map(category => (
+            <Button
+              variant='text'
+              sx={{ margin: '0 4px' }}
+              onClick={() => setCategoryId(category.id)}
+              key={category.id}
+            >
+              {category.categoryTitle}
+            </Button>
+          ))}
       </Box>
 
       <Box
@@ -67,14 +72,16 @@ const ProductSection = () => {
           flexWrap: 'wrap',
           justifyContent: 'center',
           alignContent: 'center',
-          gap: 3,
-          margin: '10px 5px',
+          gap: 2,
+          width: "75%",
+          margin: '10px auto',
           padding: '15px 5px',
         }}
       >
-        {filteredProducts.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {filteredProducts &&
+          filteredProducts.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))}
       </Box>
     </Box>
   );
