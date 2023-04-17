@@ -8,6 +8,7 @@ import {
   addDoc,
   collection,
   collectionGroup,
+  deleteDoc,
   doc,
   DocumentData,
   Firestore,
@@ -32,6 +33,7 @@ import {
 } from 'firebase/auth';
 import {
   FirebaseStorage,
+  deleteObject,
   getDownloadURL,
   getStorage,
   ref,
@@ -51,6 +53,7 @@ export type AppState = {
   userInfo: DocumentData[] | undefined;
   auth: Auth;
   storage: FirebaseStorage;
+  carts: DocumentData[] | undefined;
   signInWithGoogle: () => void;
   logInWithEmailAndPassword: (email: string, password: string) => void;
   registerWithEmailAndPassword: (
@@ -68,6 +71,7 @@ export type AppState = {
     categoryId: number,
     uploadedImg: Blob
   ) => void;
+  deleteProduct: (useruid: string, productId: string) => void;
 };
 
 type Props = {
@@ -100,6 +104,9 @@ const Container = ({ children }: Props) => {
 
   const categoriesInfo = query(collection(db, 'categories'));
   const [categoriesList] = useCollectionData(categoriesInfo);
+
+  const productCartInfo = query(collection(db, 'carts'));
+  const [carts] = useCollectionData(productCartInfo);
 
   // const [productsList, setProductsList] = useState<ProductTypes>(Products);
   // const [categoriesList, setCategoriesList] =
@@ -275,6 +282,19 @@ const Container = ({ children }: Props) => {
     }
   };
 
+  const handleDeleteProduct = async (useruid: string, productId: string) => {
+    if (auth.currentUser?.uid === useruid) {
+      await deleteDoc(doc(db, 'products', productId));
+
+      // Create a reference to the file to delete
+      const desertRef = ref(storage, `${useruid}/${productId}`);
+      // Delete the file
+      deleteObject(desertRef)
+        .then(() => {})
+        .catch(error => {});
+    }
+  };
+
   const appState: AppState = {
     products: productsList,
     categories: categoriesList,
@@ -284,11 +304,13 @@ const Container = ({ children }: Props) => {
     userInfo: userInfo,
     auth: auth,
     storage: storage,
+    carts: carts,
     signInWithGoogle: signInWithGoogle,
     logInWithEmailAndPassword: logInWithEmailAndPassword,
     registerWithEmailAndPassword: registerWithEmailAndPassword,
 
     addProduct: handleAddProduct,
+    deleteProduct: handleDeleteProduct,
   };
 
   return <Provider value={appState}>{children(appState)}</Provider>;
