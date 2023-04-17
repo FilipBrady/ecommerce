@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useAppContainer } from '../Context';
 import './AddProduct.css';
 import { Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '../../data/routes';
 
 const AddProduct = () => {
   const { user, userInfo, auth, categories, addProduct } = useAppContainer();
@@ -11,6 +13,8 @@ const AddProduct = () => {
   const [productPrice, setProductPrice] = useState(0);
   const [productCategory, setProductCategory] = useState('');
   const [productCategoryId, setProductCategoryId] = useState(0);
+  const navigate = useNavigate();
+
   const handleFileUpload = (e: any) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
@@ -44,6 +48,7 @@ const AddProduct = () => {
       setProductCategoryId(0);
       setProductDescription('');
       setUploadedImg(undefined);
+      navigate(routes.profil);
     }
   };
   return (
