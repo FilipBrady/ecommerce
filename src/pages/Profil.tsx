@@ -8,6 +8,7 @@ import UsersCart from '../components/cart/UsersCart';
 const Profil = () => {
   const { userInfo, auth, products, carts } = useAppContainer();
   const navigate = useNavigate();
+  
   return (
     <div>
       {userInfo?.map(user => {
@@ -76,13 +77,24 @@ const Profil = () => {
             </div>
           ))}
       </div> */}
-      {/* <div>
-        {carts?.map(carts => (
-          <div key={carts.useruid}>
-            <UsersCart carts={carts} />
-          </div>
-        ))}
-      </div> */}
+      <div>
+        {carts?.map(
+          carts => {
+            if (auth.currentUser?.uid === carts.useruid) {
+              return (
+                <div>
+                  <UsersCart carts={carts} />
+                </div>
+              );
+            }
+          }
+          // (
+          //   <div key={carts.useruid}>
+          //     <UsersCart carts={carts} />
+          //   </div>
+          // )
+        )}
+      </div>
     </div>
   );
 };
