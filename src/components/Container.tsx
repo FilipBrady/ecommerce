@@ -11,6 +11,7 @@ import {
   collection,
   collectionGroup,
   deleteDoc,
+  deleteField,
   doc,
   DocumentData,
   Firestore,
@@ -80,6 +81,9 @@ export type AppState = {
     productPrice: number,
     userUid: string
   ) => void;
+  plusProductInCart: (productId: string) => void;
+  minusProductInCart: (productId: string) => void;
+  deleteProductFromCart: (productId: string) => void;
 };
 
 type Props = {
@@ -313,7 +317,6 @@ const Container = ({ children }: Props) => {
     // Get the cart data for the current user
     const cartSnapshot = await getDoc(cartRef);
     const cartData = cartSnapshot.data();
-    console.log(cartSnapshot);
 
     if (cartSnapshot.exists()) {
       const productIndex = cartData?.productsInCart.findIndex(
@@ -321,8 +324,6 @@ const Container = ({ children }: Props) => {
       );
 
       cartData?.productsInCart.map(async (cartProduct: any) => {
-        console.log(cartProduct.productId === productId);
-
         if (cartProduct.productId === productId) {
           const updatedProducts = [...cartData?.productsInCart];
           updatedProducts[productIndex].productAmount++;
@@ -359,6 +360,84 @@ const Container = ({ children }: Props) => {
     }
   };
 
+  const handlePlusProductInCart = async (productId: string) => {
+    if (auth.currentUser?.uid !== undefined) {
+      const useruid = auth.currentUser?.uid;
+      const cartRef = doc(db, 'carts', useruid);
+
+      const cartSnapshot = await getDoc(cartRef);
+      const cartData = cartSnapshot.data();
+      const productIndex = cartData?.productsInCart.findIndex(
+        (product: any) => product.productId === productId
+      );
+      if (cartSnapshot.exists()) {
+        cartData?.productsInCart.map(async (cartProduct: any) => {
+          if (cartProduct.productId === productId) {
+            const updatedProducts = [...cartData?.productsInCart];
+            updatedProducts[productIndex].productAmount++;
+
+            await updateDoc(cartRef, {
+              productsInCart: updatedProducts,
+            });
+          }
+        });
+      }
+    }
+  };
+  const handleMinusProductInCart = async (productId: string) => {
+    if (auth.currentUser?.uid !== undefined) {
+      const useruid = auth.currentUser?.uid;
+      const cartRef = doc(db, 'carts', useruid);
+
+      const cartSnapshot = await getDoc(cartRef);
+      const cartData = cartSnapshot.data();
+      const productIndex = cartData?.productsInCart.findIndex(
+        (product: any) => product.productId === productId
+      );
+      if (cartSnapshot.exists()) {
+        cartData?.productsInCart.map(async (cartProduct: any) => {
+          if (cartProduct.productId === productId) {
+            const updatedProducts = [...cartData.productsInCart];
+            updatedProducts[productIndex].productAmount--;
+
+            await updateDoc(cartRef, {
+              productsInCart: updatedProducts,
+            });
+          }
+        });
+      }
+    }
+  };
+
+  const handleDeleteProductFromCart = async (productId: string) => {
+    if (auth.currentUser?.uid !== undefined) {
+      const useruid = auth.currentUser.uid;
+      const cartRef = doc(db, 'users', useruid);
+
+      const cartSnapshot = await getDoc(cartRef);
+      const cartData = cartSnapshot.data();
+      
+      const productIndex = cartData?.productsInCart.findIndex(
+        (product: any) => product.productId === productId
+        );
+        
+        console.log(productIndex);
+        
+        if (cartSnapshot.exists()) {
+          // cartData?.productsInCart.map( async (cartProduct: any) => {
+            if (cartData?.productsInCart[productIndex].productId === productId) {
+            const updateProducts = [...cartData.productsInCart]
+            
+            await updateDoc(cartRef, {
+              productPrice: deleteField(),
+            });
+          }
+          // });
+        }
+        alert("hi")
+    }
+  };
+
   const appState: AppState = {
     products: productsList,
     categories: categoriesList,
@@ -376,6 +455,9 @@ const Container = ({ children }: Props) => {
     addProduct: handleAddProduct,
     deleteProduct: handleDeleteProduct,
     addProductToCart: handleAddToCart,
+    plusProductInCart: handlePlusProductInCart,
+    minusProductInCart: handleMinusProductInCart,
+    deleteProductFromCart: handleDeleteProductFromCart
   };
 
   return <Provider value={appState}>{children(appState)}</Provider>;

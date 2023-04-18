@@ -3,6 +3,7 @@ import { useAppContainer } from '../Context';
 import ProductCard from '../products/ProductCard';
 import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
+import ProductInCart from './ProductInCart';
 
 type Props = {
   carts: DocumentData;
@@ -25,7 +26,7 @@ const UsersCart = ({ carts }: Props) => {
               if (product.id === cartProduct.productId) {
                 return (
                   <div>
-                    <ProductCard product={product} />
+                    <ProductInCart product={product} cartProduct={cartProduct} />
                   </div>
                 );
               }
