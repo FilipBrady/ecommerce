@@ -11,7 +11,7 @@ type Props = {
 };
 
 const ProductDetailsSection = ({ product }: Props) => {
-  const { storage, auth, deleteProduct } = useAppContainer();
+  const { storage, auth, deleteProduct, addProductToCart } = useAppContainer();
   const [imageUrl, setImageUrl] = useState('');
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
@@ -31,6 +31,16 @@ const ProductDetailsSection = ({ product }: Props) => {
       deleteProduct(auth.currentUser.uid, product.id);
       setDeleteInput('');
       navigate(routes.profil);
+    }
+  };
+  const handleAddToCartBtn = () => {
+    if (
+      product.useruid !== auth.currentUser?.uid &&
+      auth.currentUser?.uid !== undefined
+    ) {
+      addProductToCart(product.id, product.price, auth.currentUser.uid);
+    } else {
+      alert('This product is Yours');
     }
   };
   return (
@@ -85,6 +95,19 @@ const ProductDetailsSection = ({ product }: Props) => {
         <Typography variant='h5' color='error' fontWeight='bold'>
           {product.price}€
         </Typography>
+        <Button
+              variant='contained'
+              color='primary'
+              sx={{
+                width: 'fit-content',
+                margin: '0 auto',
+                marginBottom: '5px',
+                marginTop: '5px',
+              }}
+              onClick={handleAddToCartBtn}
+            >
+              Cart
+            </Button>
       </Box>
       {isDeletingProduct && (
         <Box

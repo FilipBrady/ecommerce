@@ -6,12 +6,15 @@ import { CategoryTypes, ProductTypes } from '../data/types';
 import { initializeApp } from 'firebase/app';
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   collectionGroup,
   deleteDoc,
   doc,
   DocumentData,
   Firestore,
+  getDoc,
   getDocs,
   getFirestore,
   increment,
@@ -72,6 +75,11 @@ export type AppState = {
     uploadedImg: Blob
   ) => void;
   deleteProduct: (useruid: string, productId: string) => void;
+  addProductToCart: (
+    productId: string,
+    productPrice: number,
+    userUid: string
+  ) => void;
 };
 
 type Props = {
@@ -295,6 +303,62 @@ const Container = ({ children }: Props) => {
     }
   };
 
+  const handleAddToCart = async (
+    productId: string,
+    productPrice: number,
+    userUid: string
+  ) => {
+    const cartRef = doc(db, 'carts', userUid);
+
+    // Get the cart data for the current user
+    const cartSnapshot = await getDoc(cartRef);
+    const cartData = cartSnapshot.data();
+    console.log(cartSnapshot);
+
+    if (cartSnapshot.exists()) {
+      const productIndex = cartData?.productsInCart.findIndex(
+        (product: any) => product.productId === productId
+      );
+
+      cartData?.productsInCart.map(async (cartProduct: any) => {
+        console.log(cartProduct.productId === productId);
+
+        if (cartProduct.productId === productId) {
+          const updatedProducts = [...cartData?.productsInCart];
+          updatedProducts[productIndex].productAmount++;
+
+          await updateDoc(cartRef, {
+            productsInCart: updatedProducts,
+          });
+        } else {
+          const newProduct = {
+            productAmount: 1,
+            productPrice: productPrice,
+            productId: productId,
+          };
+
+          const updatedProducts = [...cartData.productsInCart, newProduct];
+          await setDoc(cartRef, {
+            useruid: userUid,
+            productsInCart: updatedProducts,
+          });
+        }
+      });
+    } else {
+      // If the cart does not exist, create it with the current product
+      const newProduct = {
+        productAmount: 1,
+        productPrice: productPrice,
+        productId: productId,
+      };
+      const updatedProducts = [newProduct];
+      await setDoc(cartRef, {
+        useruid: userUid,
+        productsInCart: updatedProducts,
+      });
+    }
+  };
+
   const appState: AppState = {
     products: productsList,
     categories: categoriesList,
@@ -311,6 +375,7 @@ const Container = ({ children }: Props) => {
 
     addProduct: handleAddProduct,
     deleteProduct: handleDeleteProduct,
+    addProductToCart: handleAddToCart,
   };
 
   return <Provider value={appState}>{children(appState)}</Provider>;

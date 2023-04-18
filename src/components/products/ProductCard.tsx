@@ -17,7 +17,7 @@ type Props = {
   product: DocumentData;
 };
 const ProductCard = ({ product }: Props) => {
-  const { auth, storage } = useAppContainer();
+  const { auth, storage, addProductToCart } = useAppContainer();
   const [imageUrl, setImageUrl] = useState('');
 
   if (product.image === undefined) {
@@ -27,29 +27,45 @@ const ProductCard = ({ product }: Props) => {
       setImageUrl(url);
     });
   }
+
+  const handleAddToCartBtn = () => {
+    if (
+      product.useruid !== auth.currentUser?.uid &&
+      auth.currentUser?.uid !== undefined
+    ) {
+      addProductToCart(product.id, product.price, auth.currentUser.uid);
+    } else {
+      alert('This product is Yours');
+    }
+  };
   return (
     <Box>
-      <Link
-        to={`${routes.product}/${product.id}`}
-        style={{ textDecoration: 'none', color: 'black' }}
-      >
-        <Card sx={{ maxWidth: 150, width: 150, maxHeight: 250, height: 250 }}>
+      <Card sx={{ maxWidth: 150, width: 150, maxHeight: 250, height: 250 }}>
+        <Box
+          sx={{
+            height: '96%',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            padding: '2% 0',
+          }}
+        >
           <Box
             sx={{
-              height: '96%',
+              height: '60%',
               width: '100%',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'flex-start',
-              padding: '2% 0',
             }}
           >
-            <Box
-              sx={{
-                height: '60%',
-                width: '100%',
+            <Link
+              to={`${routes.product}/${product.id}`}
+              style={{
+                textDecoration: 'none',
+                color: 'black',
+                height: '100%',
                 display: 'flex',
-                flexDirection: 'column',
               }}
             >
               {/* <Box sx={{width: "100%", height: "100%"}}> */}
@@ -83,37 +99,38 @@ const ProductCard = ({ product }: Props) => {
                 />
               )}
               {/* </Box> */}
-            </Box>
-            <CardContent
-              sx={{
-                height: '40%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'end',
-                padding: '0 16px',
-                '&:last-child': { pb: 0 },
-              }}
-            >
-              <Typography variant='body1'>
-                {product.title.substring(0, 20)}...
-              </Typography>
-
-              <Button
-                variant='contained'
-                color='primary'
-                sx={{
-                  width: 'fit-content',
-                  margin: '0 auto',
-                  marginBottom: '5px',
-                  marginTop: '5px',
-                }}
-              >
-                Cart
-              </Button>
-            </CardContent>
+            </Link>
           </Box>
-        </Card>
-      </Link>
+          <CardContent
+            sx={{
+              height: '40%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'end',
+              padding: '0 16px',
+              '&:last-child': { pb: 0 },
+            }}
+          >
+            <Typography variant='body1'>
+              {product.title.substring(0, 20)}...
+            </Typography>
+
+            <Button
+              variant='contained'
+              color='primary'
+              sx={{
+                width: 'fit-content',
+                margin: '0 auto',
+                marginBottom: '5px',
+                marginTop: '5px',
+              }}
+              onClick={handleAddToCartBtn}
+            >
+              Cart
+            </Button>
+          </CardContent>
+        </Box>
+      </Card>
     </Box>
   );
 };
